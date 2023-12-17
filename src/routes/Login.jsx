@@ -10,6 +10,7 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [showInvalidCredentialsMessage, setShowInvalidCredentialsMessage] = useState(false);
 
   const emailValid = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/.test(email);
   const passwordValid = /^.{6,4096}$/.test(password);
@@ -18,7 +19,20 @@ export default function Login() {
   const submitMutation = useMutation({
     mutationFn: () => login(email, password),
     onSuccess: () => navigate('/'),
+    onError: (err) => {
+      if (err.code === 'auth/invalid-credential') setShowInvalidCredentialsMessage(true);
+    },
   });
+
+  function handleEmailChanged(e) {
+    setEmail(e.target.value);
+    setShowInvalidCredentialsMessage(false);
+  }
+
+  function handlePasswordChanged(e) {
+    setPassword(e.target.value);
+    setShowInvalidCredentialsMessage(false);
+  }
 
   function handleSubmit(e) {
     e.preventDefault();
@@ -35,7 +49,7 @@ export default function Login() {
             id="email"
             name="email"
             autoComplete="username"
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={handleEmailChanged}
             required
           />
         </label>
@@ -48,7 +62,7 @@ export default function Login() {
             autoComplete="current-password"
             minLength="6"
             maxLength="4096"
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={handlePasswordChanged}
             required
           />
         </label>
@@ -64,6 +78,7 @@ export default function Login() {
         </label>
         <button type="submit" disabled={!formValid}>Log In</button>
       </form>
+      {showInvalidCredentialsMessage ? 'Email or password is incorrect' : null}
       {'Don\'t have an account yet? '}
       <Link to="/signup">Sign Up</Link>
     </>
